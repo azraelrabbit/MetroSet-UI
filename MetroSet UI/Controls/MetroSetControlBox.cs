@@ -43,6 +43,10 @@ namespace MetroSet_UI.Controls
     public class MetroSetControlBox : Control, iControl
     {
 
+        //public EventHandler<EventArgs> CloseClick { get; set; }
+
+        public event EventHandler<EventArgs> CloseClick;
+
         #region Interfaces
 
         /// <summary>
@@ -51,6 +55,9 @@ namespace MetroSet_UI.Controls
         [Category("MetroSet Framework"), Description("Gets or sets the style associated with the control.")]
         public Style Style
         {
+            
+            
+
             get => StyleManager?.Style ?? _style;
             set
             {
@@ -118,6 +125,8 @@ namespace MetroSet_UI.Controls
 
         public MetroSetControlBox()
         {
+            
+
             SetStyle(
                 ControlStyles.ResizeRedraw |
                 ControlStyles.OptimizedDoubleBuffer |
@@ -445,6 +454,8 @@ namespace MetroSet_UI.Controls
             if (CloseHovered)
             {
                 Parent.FindForm().Close();
+
+                CloseClick?.BeginInvoke(this, new EventArgs(), null, null);
             }
             else if (MinimizeHovered)
             {

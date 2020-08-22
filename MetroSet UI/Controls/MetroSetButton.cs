@@ -331,9 +331,13 @@ namespace MetroSet_UI.Controls
             set
             {
                 base.Enabled = value;
+                
                 if (value == false)
                 {
                     _state = MouseMode.Disabled;
+                } else
+                {
+                    _state = MouseMode.Normal;
                 }
                 Invalidate();
             }

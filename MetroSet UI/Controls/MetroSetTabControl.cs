@@ -34,6 +34,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Design;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Messaging;
 using System.Windows.Forms;
 
 namespace MetroSet_UI.Controls
@@ -43,6 +44,7 @@ namespace MetroSet_UI.Controls
     [Designer(typeof(MetroSetTabControlDesigner))]
     [ComVisible(true)]
     [ClassInterface(ClassInterfaceType.AutoDispatch)]
+    
     public class MetroSetTabControl : TabControl, iControl
     {
         #region Interfaces
@@ -131,12 +133,22 @@ namespace MetroSet_UI.Controls
                 ControlStyles.OptimizedDoubleBuffer |
                 ControlStyles.SupportsTransparentBackColor, true);
             UpdateStyles();
-            ItemSize = new Size(100, 38);
+            ItemSize = new Size(180, 38);
             Font = MetroSetFonts.UIRegular(8);
             _mth = new Methods();
             _utl = new Utilites();
             _slideAnimator = new PointFAnimate();
             ApplyTheme();
+        }
+
+        protected override void OnCreateControl()
+        {
+            base.OnCreateControl();
+            var ratio = GetDpiRatio();
+            var w = (int) (ItemSize.Width * (ratio.XRatio*2));
+             var h = (int) (ItemSize.Height * ratio.YRatio);
+            Console.WriteLine($"new item size : width: {w}, height:{h}");
+            ItemSize = new Size(w, h);
         }
 
         #endregion Constructors
@@ -346,11 +358,19 @@ namespace MetroSet_UI.Controls
         {
             var G = e.Graphics;
 
+
+            var dpiY = G.DpiY;
+            var scalY = GetDpiRate(dpiY);
+            var scalX = GetDpiRate(G.DpiX);
+
             G.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
             G.Clear(BackgroungColor);
 
-            var h = ItemSize.Height + 2;
+            Console.WriteLine($" onpaint item size : width: {ItemSize.Width}, height:{ItemSize.Height}");
+
+            var h = ItemSize.Height   + 2;
+            //var h =(int) (ItemSize.Height*scalY + 2);
 
             switch (TabStyle)
             {
@@ -363,8 +383,9 @@ namespace MetroSet_UI.Controls
 
                     for (var i = 0; i <= TabCount - 1; i++)
                     {
-                        var r = GetTabRect(i);
+                        var r = GetTabRectNew(i);
 
+                     
                         if (i == SelectedIndex)
                         {
                             using (var sb = new SolidBrush(ForeroundColor))
@@ -383,7 +404,9 @@ namespace MetroSet_UI.Controls
 
                     for (var i = 0; i <= TabCount - 1; i++)
                     {
-                        var r = GetTabRect(i);
+                        var r = GetTabRectNew(i);
+
+                       
 
                         if (i == SelectedIndex)
                         {
@@ -404,6 +427,66 @@ namespace MetroSet_UI.Controls
 
         }
 
+        const int _sDpi=96;
+        float GetDpiRate(float dpi)
+        {
+            return dpi / _sDpi;
+        }
+
+        public Rectangle GetTabRectNew(int i)
+        {
+            var r =GetTabRect(i);
+            return r;
+            using (Graphics g = Graphics.FromHwnd(IntPtr.Zero))
+            {
+                float dpiX = g.DpiX;
+                float dpiY = g.DpiY;
+
+                var scalX = GetDpiRate(g.DpiX);
+
+                var scalY = GetDpiRate(g.DpiY);
+
+                r.Height = (int)(r.Height * scalY);
+                r.Width = (int)(r.Width * scalX);
+
+                Console.WriteLine("DPI Y :"+dpiY+ "  |  scal y: "+scalY);
+                Console.WriteLine("DPI X :"+dpiX+"   |  cal x: "+scalX);
+            }
+
+            
+
+            return r;
+        }
+
+        public DpiRatio GetDpiRatio()
+        {
+            using (Graphics g = Graphics.FromHwnd(IntPtr.Zero))
+            {
+                float dpiX = g.DpiX;
+                float dpiY = g.DpiY;
+
+                float scalX = GetDpiRate(g.DpiX);
+
+                float scalY = GetDpiRate(g.DpiY);
+ 
+                Console.WriteLine("DPI Y :"+dpiY+ "  |  scal y: "+scalY);
+                Console.WriteLine("DPI X :"+dpiX+"   |  cal x: "+scalX);
+
+                return new DpiRatio()
+                {
+                    XRatio = scalY,
+                    YRatio = scalY
+                };
+            }
+        }
+
+        public class DpiRatio
+        {
+            public float XRatio { get; set; }
+
+            public float YRatio { get; set; }
+        }
+
         #endregion Draw Control
 
         #region Events
@@ -417,7 +500,7 @@ namespace MetroSet_UI.Controls
             base.OnMouseMove(e);
             for (var i = 0; i <= TabCount - 1; i++)
             {
-                var r = GetTabRect(i);
+                var r = GetTabRectNew(i);
                 if (!r.Contains(e.Location)) continue;
                 Cursor = Cursors.Hand;
                 Invalidate();

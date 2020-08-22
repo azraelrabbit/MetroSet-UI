@@ -32,10 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MetroSet UI, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\MetroSet UI\bin\Debug\MetroSet UI.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -106,6 +102,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\monochrome-square-pattern.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MetroSet UI\MetroSet UI.csproj">
+      <Project>{246951dc-5e33-4a86-9498-a03f9d784efa}</Project>
+      <Name>MetroSet UI</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
